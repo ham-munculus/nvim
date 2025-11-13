@@ -4,7 +4,15 @@ return {
     opts = {
       servers = {
         lua_ls = {},
-        basedpyright = {},
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                typeCheckingMode = "standard",
+              },
+            },
+          },
+        },
         ruff = {},
         jsonls = {},
         yamlls = {},
