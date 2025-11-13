@@ -95,6 +95,6 @@ map("n", "<leader>dm", function()
 end, "delete all marks")
 
 local indent = require("blink.indent")
-map("n", "<leader>di", function()
+map("n", "<leader>ii", function()
   indent.enable(not indent.is_enabled())
 end, "Toggle indent guides")
