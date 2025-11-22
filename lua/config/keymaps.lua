@@ -11,6 +11,19 @@ local floating = require("utils.floating-windows")
 vim.api.nvim_create_user_command("BottomTerm", floating.toggle_bottom_terminal, {})
 vim.api.nvim_create_user_command("Messages", floating.show_messages, {})
 
+map("n", "<c-s-3>", function()
+  local number = vim.wo.number
+  local relativenumber = vim.wo.relativenumber
+
+  if number or relativenumber then
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+  else
+    vim.wo.number = true
+    vim.wo.relativenumber = true
+  end
+end, "Toggle relative and absolute numbers")
+
 -- map("n", "<leader>\\", floating.toggle_floating_terminal, "toggle floating terminal")
 -- map("i", "<leader>\\", floating.toggle_floating_terminal, "toggle floating terminal")
 -- map("t", "<leader>\\", floating.toggle_floating_terminal, "toggle floating terminal")
@@ -35,12 +48,6 @@ vim.keymap.set("n", "k", function()
   return (vim.v.count == 0 and "gk" or "k") .. "zz"
 end, { expr = true, silent = true, desc = "Up (wrap-aware, centered)" })
 
--- Window navigation
--- map("n", "<C-S-h>", "<C-w><C-h>", "Move focus to left")
--- map("n", "<C-S-l>", "<C-w><C-l>", "Move focus to right")
--- map("n", "<C-S-j>", "<C-w><C-j>", "Move focus to bottom")
--- map("n", "<C-S-k>", "<C-w><C-k>", "Move focus to top")
-
 -- Visual mode
 map("v", "J", ":m '>+1<CR>gv=gv", "move selection down")
 map("v", "K", ":m '<-2<CR>gv=gv", "move selection up")
@@ -55,21 +62,6 @@ map("n", "G", "Gzz", "center after jumpto end")
 -- Execute
 map("n", "<space><space>x", "<cmd>source %<CR>", "source current file")
 map("n", "<space><space>c", "<cmd>source ~/.config/nvim/init.lua<CR>", "source init.lua")
-
--- Search
--- map("n", "<Esc>", "<cmd>nohlsearch<CR>", "clear search highlight")
-
--- Splits
--- map("n", "<leader>sv", "<C-w>v", "Split vertically")
--- map("n", "<leader>sh", "<C-w>s", "Split horizontally")
--- map("n", "<leader>se", "<C-w>=", "Equal split size")
--- map("n", "<leader>sw", "<cmd>close<CR>", "Close split")
-
--- Resize
--- map("n", "<S-Up>", "<cmd>resize +2<CR>", "Resize up")
--- map("n", "<S-Down>", "<cmd>resize -2<CR>", "Resize down")
--- map("n", "<S-Left>", "<cmd>vertical resize -2<CR>", "Resize left")
--- map("n", "<S-Right>", "<cmd>vertical resize +2<CR>", "Resize right")
 
 -- Tabs
 map("n", "<leader>to", "<cmd>tabnew<CR>", "Open new tab")

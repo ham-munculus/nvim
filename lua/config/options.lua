@@ -33,8 +33,8 @@ vim.g.mapleader = " "
 -- vim.g.maplocalleader = " "
 
 -- Display
-vim.opt.number = true
-vim.opt.relativenumber = true
+vim.opt.number = false -- can be toggled with <c-s-3>
+vim.opt.relativenumber = false -- can be toggled with <c-s-3>
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.sidescrolloff = 8
@@ -44,6 +44,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.showmatch = true
 vim.opt.winblend = 0
 vim.opt.confirm = true
+vim.g.indent_guide = false
 
 -- Indentation
 vim.opt.tabstop = 4
