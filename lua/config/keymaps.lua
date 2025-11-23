@@ -3,7 +3,7 @@
 -- Add any additional keymaps here
 
 local map = function(mode, key, fn, desc)
-  vim.keymap.set(mode, key, fn, { silent = true, noremap = true, desc = desc })
+	vim.keymap.set(mode, key, fn, { silent = true, noremap = true, desc = desc })
 end
 
 local floating = require("utils.floating-windows")
@@ -11,17 +11,19 @@ local floating = require("utils.floating-windows")
 vim.api.nvim_create_user_command("BottomTerm", floating.toggle_bottom_terminal, {})
 vim.api.nvim_create_user_command("Messages", floating.show_messages, {})
 
-map("n", "<c-s-3>", function()
-  local number = vim.wo.number
-  local relativenumber = vim.wo.relativenumber
+map("n", "<leader>pu", ":lua vim.pack.update()<CR>", "Update plugins")
 
-  if number or relativenumber then
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-  else
-    vim.wo.number = true
-    vim.wo.relativenumber = true
-  end
+map("n", "<c-s-3>", function()
+	local number = vim.wo.number
+	local relativenumber = vim.wo.relativenumber
+
+	if number or relativenumber then
+		vim.wo.number = false
+		vim.wo.relativenumber = false
+	else
+		vim.wo.number = true
+		vim.wo.relativenumber = true
+	end
 end, "Toggle relative and absolute numbers")
 
 -- map("n", "<leader>\\", floating.toggle_floating_terminal, "toggle floating terminal")
@@ -41,11 +43,11 @@ map("n", "<C-u>", "<C-u>zz", "scroll up centered")
 -- map("n", "j", "jzz", "move down centered")
 -- map("n", "k", "kzz", "move up centered")
 vim.keymap.set("n", "j", function()
-  return (vim.v.count == 0 and "gj" or "j") .. "zz"
+	return (vim.v.count == 0 and "gj" or "j") .. "zz"
 end, { expr = true, silent = true, desc = "Down (wrap-aware, centered)" })
 
 vim.keymap.set("n", "k", function()
-  return (vim.v.count == 0 and "gk" or "k") .. "zz"
+	return (vim.v.count == 0 and "gk" or "k") .. "zz"
 end, { expr = true, silent = true, desc = "Up (wrap-aware, centered)" })
 
 -- Visual mode
@@ -82,11 +84,65 @@ map("t", "<Esc><Esc>", "<C-\\><C-n>", "Exit terminal mode")
 
 -- Delete marks
 map("n", "<leader>dm", function()
-  vim.cmd("delmarks!")
-  print("all marks deleted")
+	vim.cmd("delmarks!")
+	print("all marks deleted")
 end, "delete all marks")
 
 local indent = require("blink.indent")
 map("n", "<leader>ii", function()
-  indent.enable(not indent.is_enabled())
+	indent.enable(not indent.is_enabled())
 end, "Toggle indent guides")
+
+-- oil.nvim keymaps
+
+map("n", "<leader>e", ":Oil<CR>", "Oil File Buffer Explorer")
+
+-- Snacks picker keymaps
+require("snacks")
+map("n", "<leader>ff", function()
+	Snacks.picker.smart()
+end, "Smart Find files")
+map("n", "<leader>/", function()
+	Snacks.picker.grep({ layout = "ivy" })
+end, "Multi-grep")
+map("n", "<leader>n", function()
+	Snacks.picker.notifications({ layout = "ivy" })
+end, "Notifications")
+map("n", "<leader>f;", function()
+	Snacks.picker.command_history({ layout = "ivy" })
+end, "Command History")
+-- map("n", "<leader>e", function() Snacks.picker.explorer() end, "Explorer") -- going to use oil instead
+map("n", "<leader>fg", function()
+	Snacks.picker.git_branches({ layout = "ivy" })
+end, "Git Branches")
+map("n", "<leader>fx", function()
+	Snacks.picker.diagnostics({ layout = "ivy" })
+end, "Diagnostics")
+map("n", "<leader>fh", function()
+	Snacks.picker.help()
+end, "Help Documentation")
+map("n", "<leader>fk", function()
+	Snacks.picker.keymaps({ layout = "ivy" })
+end, "Keymaps")
+map("n", "<leader>fq", function()
+	Snacks.picker.qflist({ layout = "ivy" })
+end, "Quick Fix List")
+map("n", "<leader>fc", function()
+	Snacks.picker.colorschemes({ layout = "ivy" })
+end, "Colorscheme")
+map("n", "gd", function()
+	Snacks.picker.lsp_definitions()
+end, "Goto Definition")
+map("n", "gD", function()
+	Snacks.picker.lsp_declarations()
+end, "Goto Declaration")
+-- map("n", "grr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References" )
+map("n", "gI", function()
+	Snacks.picker.lsp_implementations()
+end, "Goto Implementation")
+map("n", "gy", function()
+	Snacks.picker.lsp_type_definitions()
+end, "Goto T[y]pe Definition")
+
+-- trouble keymaps
+map("n", "<leader>xx", ":Trouble diagnostics toggle<cr>", "Diagnostics (trouble)")

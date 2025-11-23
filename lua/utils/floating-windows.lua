@@ -1,3 +1,4 @@
+
 local M = {}
 
 function M.create_floating_window(width, height)

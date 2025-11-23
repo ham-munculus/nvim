@@ -59,7 +59,7 @@ vim.opt.smartcase = true
 vim.opt.incsearch = true
 
 -- Clipboard & splits
--- vim.opt.clipboard:append("unnamedplus")
+vim.opt.clipboard:append("unnamedplus")
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 
