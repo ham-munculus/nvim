@@ -49,6 +49,56 @@ function M.setup()
 	end
 
 	---------------------------------------------------------------------------
+	-- Catppuccin Mocha Dark: transparent background
+	---------------------------------------------------------------------------
+	if cs and cs:match("^catppuccin") then
+		local ok, catppuccin = pcall(require, "catppuccin")
+		if ok and catppuccin.setup then
+			catppuccin.setup({
+				flavour = "mocha", -- ensure we’re on mocha
+				transparent_background = true,
+				float = {
+					transparent = true,
+					solid = false,
+				},
+				-- optional extra tweaks:
+				-- term_colors = false,
+				-- dim_inactive = { enabled = false },
+			})
+		else
+			-- fallback globals for older versions; mostly safe no-ops now
+			vim.g.catppuccin_flavour = "mocha"
+			vim.g.catppuccin_transparent_background = true
+		end
+
+		-- reapply whatever exact scheme Omarchy picked (e.g. "catppuccin-mocha")
+		pcall(vim.cmd.colorscheme, cs)
+		cs = vim.g.colors_name
+	end
+
+	---------------------------------------------------------------------------
+	-- Temerald (example: uses Poimandres underneath)
+	---------------------------------------------------------------------------
+	if cs == "poimandres" then
+		local ok, poimandres = pcall(require, "poimandres")
+		if ok and poimandres.setup then
+			poimandres.setup({
+				-- Poimandres uses transparent = true to remove bg
+				disable_background = true, -- or transparent = true, depending on plugin
+				-- check the plugin README for the exact option name
+			})
+		else
+			-- If the plugin exposes only globals, set them here
+			-- (just an example; check plugin docs)
+			vim.g.poimandres_disable_background = true
+		end
+
+		-- Reapply colorscheme with transparent background
+		pcall(vim.cmd.colorscheme, "poimandres")
+		cs = vim.g.colors_name
+	end
+
+	---------------------------------------------------------------------------
 	-- Optional: enforce transparent backgrounds globally
 	---------------------------------------------------------------------------
 	vim.api.nvim_create_autocmd("ColorScheme", {

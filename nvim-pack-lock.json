@@ -17,7 +17,7 @@
       "src": "https://github.com/ribru17/bamboo.nvim.git"
     },
     "blink.cmp": {
-      "rev": "73ea297bc665c936b51797d5a55599536ffee0d8",
+      "rev": "74967d4f9e6bffd4f707493917503e9d9c73e92c",
       "src": "https://github.com/Saghen/blink.cmp"
     },
     "blink.indent": {
@@ -105,7 +105,7 @@
       "src": "https://github.com/tahayvr/matteblack.nvim.git"
     },
     "mini.nvim": {
-      "rev": "6e885e4c27743ae6bf5957ea78ce86c032835f09",
+      "rev": "72b0194c56c984476c5975b62eb340fd1aa1686a",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "neovim": {
@@ -125,7 +125,7 @@
       "src": "https://github.com/windwp/nvim-autopairs"
     },
     "nvim-lspconfig": {
-      "rev": "a2a277114dbb93e98f04b5087a9b832918b7da15",
+      "rev": "30a2b191bccf541ce1797946324c9329e90ec448",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-notify": {
@@ -161,7 +161,7 @@
       "src": "https://github.com/rose-pine/neovim.git"
     },
     "smear-cursor.nvim": {
-      "rev": "b9377c0508712c113d73d4ea94190a49b47ac18d",
+      "rev": "ab3741e2ca22fe0cae3948d4d65b52e376c83c6a",
       "src": "https://github.com/sphamba/smear-cursor.nvim.git"
     },
     "snacks.nvim": {

@@ -33,9 +33,7 @@ vim.pack.add({
 	{ src = "https://github.com/folke/flash.nvim" },
 	{ src = "https://github.com/nvim-lua/plenary.nvim.git" },
 
-	-- TODO: harpoon
 	{ src = "https://github.com/folke/todo-comments.nvim.git" },
-	{ src = "https://github.com/ThePrimeagen/harpoon.git", branch = "harpoon2" },
 
 	-- colorschemes from omarchy themes
 	{ src = "https://github.com/everviolet/nvim.git", name = "evergarden" }, -- Evergarden
@@ -52,17 +50,7 @@ vim.pack.add({
 	{ src = "https://github.com/EdenEast/nightfox.nvim.git", name = "nordfox" }, -- Nord
 	{ src = "https://github.com/ribru17/bamboo.nvim.git", name = "bamboo" }, -- Osaka-jade
 	{ src = "https://github.com/olivercederborg/poimandres.nvim.git", name = "poimandres" }, -- Temerald
-	{
-		src = "https://github.com/catppuccin/nvim.git",
-		name = "catppuccin-dark", -- Catppuccin Dark
-		opts = {
-			flavor = "mocha",
-			transparent_background = true,
-			float = {
-				transparent = true,
-			},
-		},
-	}, -- Catppuccin dark
+	{ src = "https://github.com/catppuccin/nvim.git", name = "catppuccin-dark" }, -- Catppuccin dark
 })
 require("config.init")
 require("plugins.init")
