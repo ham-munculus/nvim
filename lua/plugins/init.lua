@@ -21,6 +21,31 @@ if vim.g.colors_name == "everforest" then
 	-- Reapply the colorscheme with the new settings
 	pcall(vim.cmd.colorscheme, "everforest")
 end
+-- Tokyonight: fully transparent
+do
+	local cs = vim.g.colors_name
+	-- Omarchy may use variants like "tokyonight", "tokyonight-night", etc.
+	if cs and cs:match("^tokyonight") then
+		local ok, tokyonight = pcall(require, "tokyonight")
+		if ok and tokyonight.setup then
+			tokyonight.setup({
+				-- style = "night", -- optional, only if you want to force one variant
+				transparent = true,
+				styles = {
+					sidebars = "transparent",
+					floats = "transparent",
+				},
+			})
+		else
+			-- Legacy globals, mostly for older versions; harmless here
+			-- vim.g.tokyonight_style = "night"
+			vim.g.tokyonight_transparent = true
+		end
+
+		-- Reapply the exact variant Omarchy picked
+		pcall(vim.cmd.colorscheme, cs)
+	end
+end
 
 require("plugins.nvim-notify")
 require("plugins.fidget")
