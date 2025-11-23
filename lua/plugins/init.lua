@@ -22,5 +22,6 @@ require("plugins.smear")
 require("plugins.trouble")
 require("plugins.formatting")
 require("plugins.cloak")
+require("plugins.flash")
 
 require("plugins.lsp")
