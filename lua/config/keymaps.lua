@@ -78,6 +78,10 @@ map("n", "<leader>wp", "<cmd>setlocal wrap<CR>", "Enable text wrap")
 -- Terminal
 map("t", "<Esc><Esc>", "<C-\\><C-n>", "Exit terminal mode")
 
+-- center buffer when progressing through search results
+map("n", "n", "nzzzv", "center buffer when progressing through search results")
+map("n", "N", "Nzzzv", "center buffer when progressing through search results")
+
 -- File explorer
 -- map("n", "\\", ":Explore<CR>", "Open file explorer") -- disabled for localleader reasons
 -- map("n", "<leader>e", ":Explore<CR>", "Open file explorer")
@@ -166,3 +170,9 @@ map("n", "<leader>e", function()
 
 	vim.cmd.Lexplore(dir)
 end, "Left hand netrw Explorer")
+
+-- toggle inlay hints
+map("n", "<leader>h", function()
+	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+	vim.notify(vim.lsp.inlay_hint.is_enabled() and "Inlay Hints Enabled" or "Inlay Hints Disabled")
+end)
