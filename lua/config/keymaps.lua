@@ -147,4 +147,22 @@ map("n", "<leader>z", ":lua Snacks.zen()<cr>", "Enable zen mode")
 -- trouble keymaps
 map("n", "<leader>xx", ":Trouble diagnostics toggle<cr>", "Diagnostics (trouble)")
 
-map("n", "<leader>e", ":Lexplore<cr>", "Left hand netrw Explorer")
+map("n", "<leader>e", function()
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		local ft = vim.bo[buf].filetype
+		local config = vim.api.nvim_win_get_config(win)
+
+		if ft == "netrw" and config.relative == "" then
+			vim.api.nvim_win_close(win, true)
+			return
+		end
+	end
+
+	local dir = vim.fn.expand("%:p:h")
+	if dir == "" then
+		dir = vim.fn.getcwd()
+	end
+
+	vim.cmd.Lexplore(dir)
+end, "Left hand netrw Explorer")
