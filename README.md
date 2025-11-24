@@ -1,1 +1,0 @@
-This is an updated neovim config which uses the vim.pack native plugin manager in nvim 0.12.0 and some of the native lsp features. I also built in some theme handling to play nice with omarchy's automatic theme switching. 
