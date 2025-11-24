@@ -93,10 +93,6 @@ map("n", "<leader>ii", function()
 	indent.enable(not indent.is_enabled())
 end, "Toggle indent guides")
 
--- oil.nvim keymaps
-
-map("n", "<leader>e", ":Oil<CR>", "Oil File Buffer Explorer")
-
 -- Snacks picker keymaps
 require("snacks")
 map("n", "<leader>ff", function()
@@ -111,7 +107,9 @@ end, "Notifications")
 map("n", "<leader>f;", function()
 	Snacks.picker.command_history({ layout = "ivy" })
 end, "Command History")
--- map("n", "<leader>e", function() Snacks.picker.explorer() end, "Explorer") -- going to use oil instead
+map("n", "<leader>E", function()
+	Snacks.picker.explorer()
+end, "Explorer")
 map("n", "<leader>fg", function()
 	Snacks.picker.git_branches({ layout = "ivy" })
 end, "Git Branches")
@@ -144,5 +142,9 @@ map("n", "gy", function()
 	Snacks.picker.lsp_type_definitions()
 end, "Goto T[y]pe Definition")
 
+map("n", "<leader>z", ":lua Snacks.zen()<cr>", "Enable zen mode")
+
 -- trouble keymaps
 map("n", "<leader>xx", ":Trouble diagnostics toggle<cr>", "Diagnostics (trouble)")
+
+map("n", "<leader>e", ":Lexplore<cr>", "Left hand netrw Explorer")
