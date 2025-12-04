@@ -24,7 +24,7 @@ mason.setup({
 local mason_lspconfig = require("mason-lspconfig")
 mason_lspconfig.setup({
 	ensure_installed = {
-		"lua_ls",
+		-- "lua_ls",
 		"basedpyright",
 		"ruff",
 		-- "jsonls",
@@ -169,6 +169,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- Lua
 vim.lsp.config.lua_ls = vim.tbl_deep_extend("force", vim.lsp.config.lua_ls or {}, {
+	cmd = { "lua-language-server" },
 	settings = {
 		Lua = {
 			hint = {
