@@ -104,6 +104,16 @@ vim.lsp.config("ruff", {
 	},
 })
 
+vim.lsp.config("rust_analyzer", {
+	settings = {
+		["rust-analyzer"] = {
+			check = {
+				command = "clippy",
+			},
+		},
+	},
+})
+
 vim.lsp.config("tailwindcss", {
 	filetypes = {
 		"html",
