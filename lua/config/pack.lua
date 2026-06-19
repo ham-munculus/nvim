@@ -21,7 +21,6 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", version = "main" },
 	{ src = "https://github.com/nvim-tree/nvim-web-devicons" },
 	{ src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
-	{ src = "https://github.com/mrjones2014/smart-splits.nvim" }, -- for wezterm multiplexing
 
 	-- formatting & editor
 	{ src = "https://github.com/stevearc/conform.nvim" },
