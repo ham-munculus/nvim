@@ -63,5 +63,6 @@ vim.pack.add({
 	{ src = "https://github.com/ribru17/bamboo.nvim.git", name = "bamboo" }, -- Osaka-jade
 	{ src = "https://github.com/olivercederborg/poimandres.nvim.git", name = "poimandres" }, -- Temerald
 	{ src = "https://github.com/bjarneo/vantablack.nvim" }, -- Vantablack
+	{ src = "https://github.com/bjarneo/aether.nvim" }, -- aether
 	{ src = "https://github.com/xero/miasma.nvim.git" }, -- miasma
 })
