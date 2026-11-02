@@ -6,7 +6,7 @@ vim.g.mapleader = " "
 
 --display
 vo.number = true
-vo.relativenumber=true
+vo.relativenumber = true
 vo.cursorline = true
 vo.scrolloff = 10
 vo.sidescrolloff = 8
@@ -27,7 +27,7 @@ vo.autoindent = true
 vo.smartindent = true
 
 --search
-vo.clipboard:append("unnamedplus")
+-- vo.clipboard:append("unnamedplus")
 vo.ignorecase = true
 vo.smartcase = true
 vo.incsearch = true
@@ -44,3 +44,20 @@ vo.undodir = vim.fn.expand("~/.nvim/undodir")
 vo.redrawtime = 10000
 vo.maxmempattern = 20000
 vo.diffopt:append("linematch:60")
+
+if vim.fn.has("wsl") == 1 then
+	vim.g.clipboard = {
+		name = "wsl-wl-clipboard",
+		copy = {
+			["+"] = { "wl-copy", "--type", "text/plain" },
+			["*"] = { "wl-copy", "--type", "text/plain" },
+		},
+		paste = {
+			["+"] = { "sh", "-c", "wl-paste --no-newline | tr -d '\\r'" },
+			["*"] = { "sh", "-c", "wl-paste --no-newline | tr -d '\\r'" },
+		},
+		cache_enabled = 0,
+	}
+
+	vim.opt.clipboard = "unnamedplus"
+end

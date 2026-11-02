@@ -7,6 +7,9 @@ require("conform").setup({
 		lua = { "stylua" },
 		python = { "ruff" },
 		rust = { "rustfmt" },
+		json = { "prettierd", "prettier", "jq" },
+		-- For JSON with comments (tsconfig.json, etc.)
+		jsonc = { "prettierd", "prettier" },
 	},
 })
 

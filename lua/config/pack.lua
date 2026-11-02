@@ -30,6 +30,9 @@ vim.pack.add({
 	{ src = "https://github.com/windwp/nvim-autopairs" },
 	{ src = "https://github.com/nvim-mini/mini.nvim" },
 
+	-- python cells / jupyter kernel (needs pynvim + jupyter_client in the nvim provider venv)
+	{ src = "https://github.com/benlubas/molten-nvim" },
+
 	-- fff file search
 	{ src = "https://github.com/dmtrKovalenko/fff.nvim" },
 	-- Snacks - github PRs.

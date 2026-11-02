@@ -1,18 +1,9 @@
 -- lua/plugins/lsp.lua
 
 local function get_python_path()
-	local cwd = vim.fn.getcwd()
-
-	local candidates = {
-		cwd .. "/.venv/Scripts/python.exe",
-		cwd .. "/.venv/Scripts/python",
-		cwd .. "/.venv/bin/python",
-	}
-
-	for _, path in ipairs(candidates) do
-		if vim.fn.filereadable(path) == 1 then
-			return path
-		end
+	local resolved = require("utils.python").resolve()
+	if resolved then
+		return resolved
 	end
 
 	if vim.fn.executable("python") == 1 then
