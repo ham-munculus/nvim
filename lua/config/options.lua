@@ -1,3 +1,4 @@
+require("config.remote_clipboard").setup()
 local vo = vim.opt
 vo.path:append("**")
 

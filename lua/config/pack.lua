@@ -49,6 +49,10 @@ vim.pack.add({
 	{ src = "https://github.com/folke/todo-comments.nvim.git" },
 
 	-- colorschemes (from omarchy themes)
+	{ src = "https://github.com/kepano/flexoki-neovim", name = "flexoki" },
+	{ src = "https://github.com/omacom-io/lumon.nvim" },
+	{ src = "https://github.com/OldJobobo/retro-82.nvim" },
+	{ src = "https://github.com/ficcdaf/ashen.nvim" },
 	{ src = "https://github.com/rose-pine/neovim.git", name = "rose-pine" }, -- Rose Pine
 	{ src = "https://github.com/folke/tokyonight.nvim.git", name = "tokyonight" }, -- Tokyo night
 	{ src = "https://github.com/catppuccin/nvim.git", name = "catppuccin" }, -- Catppuccin
