@@ -125,6 +125,35 @@ map("n", "<leader>fD", function()
 	Snacks.picker.diagnostics_buffer()
 end, "Find buffer diagnostics")
 
+-- Keymap finder: list = mode, key, description; the preview pane gets a winbar header with the
+-- full description and where the map is defined (the preview itself shows the code/mapping).
+local function keymap_format(item)
+	local k = item.item
+	local desc = (k.desc and k.desc ~= "") and k.desc or (k.rhs and k.rhs ~= "" and k.rhs) or "callback"
+	return {
+		{ k.mode, "SnacksPickerKeymapMode" },
+		{ " " },
+		{ Snacks.picker.util.align(Snacks.util.normkey(k.lhs), 15), "SnacksPickerKeymapLhs" },
+		{ " " },
+		{ desc, (k.desc and k.desc ~= "") and "Title" or "Comment" },
+	}
+end
+
+local function keymap_preview(ctx)
+	Snacks.picker.preview.preview(ctx)
+	local k = ctx.item.item
+	local where = ctx.item.file and (vim.fn.fnamemodify(ctx.item.file, ":t") .. (ctx.item.pos and (":" .. ctx.item.pos[1]) or ""))
+		or "vimscript / command"
+	local function esc(t) return (tostring(t):gsub("%%", "%%%%")) end
+	ctx.preview:wo({
+		winbar = ("%%#Title# %s %%*%%=%%#Comment# %s "):format(esc((k.desc and k.desc ~= "") and k.desc or "(no description)"), esc(where)),
+	})
+end
+
+map("n", "<leader>fk", function()
+	Snacks.picker.keymaps({ format = keymap_format, preview = keymap_preview })
+end, "Find keymaps")
+
 -- Trouble
 map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", "Diagnostics (Trouble)")
 map("n", "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", "Buffer Diagnostics (Trouble)")

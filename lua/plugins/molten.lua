@@ -30,12 +30,45 @@ vim.g.molten_auto_init_behavior = "raise" -- never prompt for a kernel; we init 
 vim.g.molten_virt_text_output = true -- inline output under the cell
 vim.g.molten_virt_lines_off_by_1 = false
 vim.g.molten_auto_open_output = false
+vim.g.molten_enter_output_behavior = "open_and_enter" -- <leader>co opens AND focuses the float
 vim.g.molten_wrap_output = true
 vim.g.molten_virt_text_max_lines = 20
 vim.g.molten_output_win_max_height = 20
 vim.g.molten_image_provider = "none" -- plots/images: see notes in the summary
 vim.g.molten_use_border_highlights = true
 vim.g.molten_cover_empty_lines = false
+
+-- Make REPL output look different from code/comments. Derived from the active colorscheme
+-- and re-applied on :colorscheme. Molten paints each output line as one highlight chunk, so the
+-- background covers the text only (ragged right edge), not the full window width.
+local function hl_color(group, attr)
+	local ok, h = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
+	return ok and h[attr] or nil
+end
+
+local function blend(a, b, t) -- mix colour a toward b by t (0..1); ints 0xRRGGBB
+	local function ch(c, sh) return bit.band(bit.rshift(c, sh), 0xff) end
+	local function mix(sh) return math.floor(ch(a, sh) + (ch(b, sh) - ch(a, sh)) * t + 0.5) end
+	return bit.lshift(mix(16), 16) + bit.lshift(mix(8), 8) + mix(0)
+end
+
+local function apply_output_hl()
+	local fg = hl_color("Special", "fg") or hl_color("DiagnosticInfo", "fg")
+	local base = hl_color("Normal", "bg") or hl_color("CursorLine", "bg")
+	local bg = base and fg and blend(base, fg, 0.12) or hl_color("CursorLine", "bg")
+	vim.api.nvim_set_hl(0, "MoltenVirtualText", { fg = fg, bg = bg, italic = false })
+	vim.api.nvim_set_hl(0, "CellRule", { link = "FloatBorder" }) -- the ═ line above output
+	vim.api.nvim_set_hl(0, "MoltenOutputWin", { link = "NormalFloat" })
+	vim.api.nvim_set_hl(0, "MoltenOutputBorder", { link = "FloatBorder" })
+	vim.api.nvim_set_hl(0, "MoltenOutputBorderSuccess", { link = "DiagnosticOk" })
+	vim.api.nvim_set_hl(0, "MoltenOutputBorderFail", { link = "DiagnosticError" })
+end
+apply_output_hl()
+vim.api.nvim_create_autocmd("ColorScheme", {
+	group = vim.api.nvim_create_augroup("PythonCellsHl", { clear = true }),
+	desc = "Re-derive REPL output colours",
+	callback = apply_output_hl,
+})
 
 vim.api.nvim_create_autocmd("PackChanged", {
 	desc = "Re-register molten remote plugin",
@@ -95,6 +128,84 @@ local function jump(dir)
 		end
 	end
 	return false
+end
+
+---------------------------------------------------------------------------
+-- Rule lines above and below inline output (same ═ look as the <leader>tt bottom terminal)
+---------------------------------------------------------------------------
+-- A separate virt_lines extmark on the cell's last line. Stacking of virt_lines on one row is
+-- NOT decided by id/creation order; left gravity (right_gravity=false) makes our mark sort before
+-- Molten's (right-gravity) one deterministically (12/12 headless runs; right gravity was random).
+-- Rules whose output Molten has dropped are pruned, so a stale rule can linger only briefly.
+
+local rule_ns = vim.api.nvim_create_namespace("python-cells-rule") -- above the output
+local rule_end_ns = vim.api.nvim_create_namespace("python-cells-rule-end") -- below the output
+
+local function output_rows(buf)
+	local rows = {}
+	local ns = vim.api.nvim_get_namespaces()["molten-extmarks"]
+	if ns then
+		for _, m in ipairs(vim.api.nvim_buf_get_extmarks(buf, ns, 0, -1, { details = true })) do
+			if m[4].virt_lines and #m[4].virt_lines > 0 then
+				rows[m[2]] = true
+			end
+		end
+	end
+	return rows
+end
+
+local function prune_rules(buf)
+	if not vim.api.nvim_buf_is_valid(buf) then
+		return
+	end
+	local rows = output_rows(buf)
+	for _, m in ipairs(vim.api.nvim_buf_get_extmarks(buf, rule_ns, 0, -1, {})) do
+		if not rows[m[2]] then
+			vim.api.nvim_buf_del_extmark(buf, rule_ns, m[1])
+		end
+	end
+	-- end rule sits on the NEXT line (drawn above it), or on the last line when the cell is at EOF
+	local count = vim.api.nvim_buf_line_count(buf)
+	for _, m in ipairs(vim.api.nvim_buf_get_extmarks(buf, rule_end_ns, 0, -1, {})) do
+		local out_row = m[2] == count - 1 and rows[m[2]] and m[2] or m[2] - 1
+		if not rows[out_row] then
+			vim.api.nvim_buf_del_extmark(buf, rule_end_ns, m[1])
+		end
+	end
+end
+
+local function place_rule(buf, row1) -- row1: 1-based last line of the evaluated code
+	local count = vim.api.nvim_buf_line_count(buf)
+	local row = math.min(row1, count) - 1
+	for _, ns in ipairs({ rule_ns, rule_end_ns }) do
+		for _, r in ipairs({ row, row + 1 }) do
+			for _, m in ipairs(vim.api.nvim_buf_get_extmarks(buf, ns, { r, 0 }, { r, -1 }, {})) do
+				vim.api.nvim_buf_del_extmark(buf, ns, m[1])
+			end
+		end
+	end
+	local win = vim.fn.bufwinid(buf)
+	local info = win ~= -1 and vim.fn.getwininfo(win)[1]
+	local width = info and (info.width - info.textoff) or vim.o.columns
+	local line = { { { string.rep("═", width), "CellRule" } } }
+	-- Stacking of virt_lines on one row is NOT decided by id/creation order. Left gravity makes
+	-- our top mark sort before Molten's (right-gravity) one (12/12 headless runs; right gravity
+	-- was random). The end rule is drawn "above" the next line, i.e. after all virt_lines of
+	-- the cell's last line; at EOF there is no next line, so it falls back to a mark below it.
+	vim.api.nvim_buf_set_extmark(buf, rule_ns, row, 0, { virt_lines = line, right_gravity = false })
+	if row + 1 < count then
+		vim.api.nvim_buf_set_extmark(buf, rule_end_ns, row + 1, 0, { virt_lines = line, virt_lines_above = true })
+	else
+		vim.api.nvim_buf_set_extmark(buf, rule_end_ns, row, 0, { virt_lines = line, right_gravity = true })
+	end
+	vim.defer_fn(function()
+		prune_rules(buf)
+	end, 800)
+end
+
+local function clear_rules()
+	vim.api.nvim_buf_clear_namespace(0, rule_ns, 0, -1)
+	vim.api.nvim_buf_clear_namespace(0, rule_end_ns, 0, -1)
 end
 
 ---------------------------------------------------------------------------
@@ -247,6 +358,7 @@ function M.restart()
 		return
 	end
 	ready[name] = nil
+	clear_rules()
 	vim.cmd("MoltenRestart!") -- restarts the kernel (state cleared) and drops cell outputs
 	when_ready(name, function()
 		notify("Kernel restarted (state cleared)")
@@ -266,6 +378,7 @@ function M.shutdown()
 		return
 	end
 	pcall(vim.cmd, "MoltenDeinit")
+	clear_rules()
 	ready[name] = nil
 	for _, b in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.b[b].cells_kernel == name then
@@ -299,6 +412,7 @@ function M.run_cell(advance)
 		notify("Cell is empty", vim.log.levels.WARN)
 	else
 		M.ensure(buf, function()
+			place_rule(buf, last)
 			vim.fn.MoltenEvaluateRange(first, last)
 		end)
 	end
@@ -307,14 +421,104 @@ function M.run_cell(advance)
 	end
 end
 
+function M.run_line()
+	local buf = vim.api.nvim_get_current_buf()
+	local row = vim.api.nvim_win_get_cursor(0)[1]
+	M.ensure(buf, function()
+		place_rule(buf, row)
+		vim.cmd("MoltenEvaluateLine")
+	end)
+end
+
 function M.run_visual()
 	vim.cmd("normal! \27") -- leave visual mode so '< and '> are set; Molten reads them
-	M.ensure(vim.api.nvim_get_current_buf(), function()
+	local buf = vim.api.nvim_get_current_buf()
+	local last = vim.fn.line("'>")
+	M.ensure(buf, function()
+		place_rule(buf, last)
 		vim.cmd("MoltenEvaluateVisual")
 	end)
 end
 
+--- Run fn with the cursor on a body line of the current cell (Molten ignores separator lines).
+local function at_cell(fn)
+	local buf = vim.api.nvim_get_current_buf()
+	local cur = vim.api.nvim_win_get_cursor(0)
+	local first, last = M.cell_range(buf, cur[1])
+	local moved = cur[1] < first or cur[1] > last
+	if moved then
+		vim.api.nvim_win_set_cursor(0, { math.min(first, vim.api.nvim_buf_line_count(buf)), 0 })
+	end
+	local ok, err = pcall(fn)
+	if moved then
+		vim.api.nvim_win_set_cursor(0, cur)
+	end
+	if not ok then
+		notify(tostring(err), vim.log.levels.ERROR)
+	end
+end
+
+--- Yank the output of the cell under the cursor (plain text, no header) to " or, with clip, "+.
+function M.yank(clip)
+	at_cell(function()
+		vim.cmd(clip and "MoltenYankOutput!" or "MoltenYankOutput")
+	end)
+end
+
+local output_buf -- single reusable scratch buffer
+
+--- Open the full output of the current cell in a normal buffer in a vertical split on the right.
+function M.open_output()
+	local saved = vim.fn.getreginfo('"')
+	vim.fn.setreg('"', "")
+	at_cell(function()
+		vim.cmd("MoltenYankOutput")
+	end)
+	local text = vim.fn.getreg('"')
+	vim.fn.setreg('"', saved)
+	if text == "" then
+		return notify("No output for this cell", vim.log.levels.WARN)
+	end
+
+	if not (output_buf and vim.api.nvim_buf_is_valid(output_buf)) then
+		output_buf = vim.api.nvim_create_buf(false, true)
+		vim.bo[output_buf].buftype = "nofile"
+		vim.bo[output_buf].bufhidden = "hide"
+		vim.bo[output_buf].swapfile = false
+		vim.bo[output_buf].filetype = "text"
+		pcall(vim.api.nvim_buf_set_name, output_buf, "cell-output")
+		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = output_buf, silent = true, desc = "Close cell output" })
+	end
+	vim.bo[output_buf].modifiable = true
+	vim.api.nvim_buf_set_lines(output_buf, 0, -1, false, vim.split(text, "\n", { plain = true }))
+
+	local win = vim.fn.bufwinid(output_buf)
+	if win == -1 then
+		vim.cmd("botright vsplit")
+		win = vim.api.nvim_get_current_win()
+		vim.api.nvim_win_set_buf(win, output_buf)
+		vim.wo[win].wrap = true
+		vim.wo[win].number = false
+		vim.wo[win].relativenumber = false
+		vim.wo[win].signcolumn = "no"
+	else
+		vim.api.nvim_set_current_win(win)
+	end
+	vim.api.nvim_win_set_cursor(win, { 1, 0 })
+end
+
+--- Open Molten's output float and focus it (scroll/yank like any buffer; q leaves).
+function M.enter_output()
+	-- noautocmd: Molten's docs advise it (BufEnter/CursorMoved handlers fight the float)
+	vim.cmd("noautocmd MoltenEnterOutput")
+	local buf = vim.api.nvim_get_current_buf()
+	if vim.bo[buf].filetype == "molten_output" then
+		vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = buf, silent = true, desc = "Close cell output" })
+	end
+end
+
 function M.clear()
+	clear_rules()
 	pcall(vim.cmd, "MoltenDelete!")
 	pcall(vim.cmd, "MoltenHideOutput")
 end
@@ -350,11 +554,14 @@ vim.api.nvim_create_autocmd("FileType", {
 		map("n", "<leader>cn", function() M.run_cell(true) end, "Cells: run cell and advance")
 		map("x", "<leader>cc", M.run_visual, "Cells: run selection")
 		map("x", "<C-S-CR>", M.run_visual, "Cells: run selection")
-		map("n", "<leader>cL", function() M.ensure(ev.buf, function() vim.cmd("MoltenEvaluateLine") end) end, "Cells: run line")
+		map("n", "<leader>cL", M.run_line, "Cells: run line")
 		map("n", "<leader>cr", M.restart, "Cells: restart kernel (clear state)")
 		map("n", "<leader>ci", M.interrupt, "Cells: interrupt")
 		map("n", "<leader>cd", M.clear, "Cells: dismiss/clear output")
-		map("n", "<leader>co", "<cmd>noautocmd MoltenEnterOutput<CR>", "Cells: open/enter output window")
+		map("n", "<leader>cy", function() M.yank(false) end, "Cells: yank cell output")
+		map("n", "<leader>cY", function() M.yank(true) end, "Cells: yank cell output to system clipboard")
+		map("n", "<leader>cO", M.open_output, "Cells: open full output in a split buffer (q closes)")
+		map("n", "<leader>co", M.enter_output, "Cells: open output float and focus it (q leaves)")
 		map("n", "<leader>ce", M.info, "Cells: show environment / kernel")
 		map("n", "<leader>cq", M.shutdown, "Cells: stop kernel")
 		map("n", "]]", function() jump(1) end, "Next cell")
